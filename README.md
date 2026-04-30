@@ -11,7 +11,7 @@
 Ubuntu / Debian / CentOS 通用脚本：
 ```bash
 apt update >/dev/null 2>&1 || yum update -y >/dev/null 2>&1 && apt install -y wget >/dev/null 2>&1 || yum install -y wget >/dev/null 2>&1 && wget -N https://raw.githubusercontent.com/ai7778/ssh/main/ssh.sh && chmod +x ssh.sh && ./ssh.sh
-
+<br><br><br>
 
 ##交互式 SSH 密钥生成脚本（最终完美版）
 -✅ 自动安装 curl（解决 command not found）
