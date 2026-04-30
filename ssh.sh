@@ -60,9 +60,13 @@ export DEBIAN_FRONTEND=noninteractive
 $PKG_UPDATE
 $PKG_UPGRADE
 
-# 6. 安装必备依赖
+# 6. 安装必备依赖 + 自动装防火墙
 echo -e "\n[3/9] 安装必备组件..."
-$PKG_INSTALL sudo curl wget python3 openssl
+if [ "$FIREWALL" = "ufw" ]; then
+    $PKG_INSTALL sudo curl wget python3 openssl ufw
+else
+    $PKG_INSTALL sudo curl wget python3 openssl firewalld
+fi
 
 # 7. 时区 + 标准Google NTP配置
 echo -e "\n[4/9] 配置时区与Google NTP服务器..."
@@ -116,12 +120,13 @@ systemctl restart sshd 2>/dev/null || systemctl restart ssh
 # 11. 防火墙配置
 echo -e "\n[8/9] 配置防火墙..."
 if [ "$FIREWALL" = "ufw" ]; then
-    ufw allow $SSH_PORT/tcp
-    ufw allow 8088/tcp
-    ufw delete allow 22/tcp 2>/dev/null
-    ufw --force enable
-    ufw reload
+    ufw allow $SSH_PORT/tcp >/dev/null 2>&1
+    ufw allow 8088/tcp >/dev/null 2>&1
+    ufw delete allow 22/tcp >/dev/null 2>&1
+    ufw --force enable >/dev/null 2>&1
+    ufw reload >/dev/null 2>&1
 else
+    systemctl enable --now firewalld >/dev/null 2>&1
     firewall-cmd --permanent --add-port=${SSH_PORT}/tcp
     firewall-cmd --permanent --add-port=8088/tcp
     firewall-cmd --permanent --remove-port=22/tcp 2>/dev/null
@@ -144,11 +149,12 @@ DOWN_URL="http://${IP}:8088/id_ed25519"
 sleep 60
 kill -9 $HTTP_PID >/dev/null 2>&1
 rm -rf /tmp/sshdown
+
 if [ "$FIREWALL" = "ufw" ]; then
-    ufw delete allow 8088/tcp 2>/dev/null
+    ufw delete allow 8088/tcp >/dev/null 2>&1
 else
-    firewall-cmd --permanent --remove-port=8088/tcp 2>/dev/null
-    firewall-cmd --reload
+    firewall-cmd --permanent --remove-port=8088/tcp >/dev/null 2>&1
+    firewall-cmd --reload >/dev/null 2>&1
 fi
 ) &
 
