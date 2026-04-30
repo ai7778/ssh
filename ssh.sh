@@ -143,10 +143,10 @@ cd /tmp/sshdown
 
 python3 -m http.server 8088 >/dev/null 2>&1 &
 HTTP_PID=$!
-DOWN_URL="http://${IP}:8088/id_ed25519"
+DOWN_URL="https://${IP}:8088/id_ed25519"
 
 (
-sleep 120
+sleep 60
 kill -9 $HTTP_PID >/dev/null 2>&1
 rm -rf /tmp/sshdown
 
@@ -165,7 +165,7 @@ echo "🔌 SSH 端口：$SSH_PORT"
 echo "🔐 私钥密码长度：${PASS_LEN}位"
 echo "🔑 私钥密码：$RANDOM_PASS"
 echo "🌐 私钥下载链接：$DOWN_URL"
-echo "⏰ 120秒后链接自动失效、8088端口关闭"
+echo "⏰ 60秒后链接自动失效、8088端口关闭"
 echo "🕒 NTP时间源：time1~4.google.com"
 echo "🚀 BBR 加速已开启"
 echo "🛡️ 已禁用密码登录，仅密钥可登录"
