@@ -8,6 +8,6 @@
 - ✅ 全系统通用：Ubuntu / Debian / CentOS
 
 ## 一键安装运行命令
-先自动安装 wget → 下载脚本 → 授权 → 直接运行：
+Ubuntu / Debian / CentOS 通用脚本：
 ```bash
-apt update >/dev/null 2>&1 || yum update -y >/dev/null 2>&1 && apt install -y wget >/dev/null 2>&1 || yum install -y wget >/dev/null 2>&1 && wget -N https://raw.githubusercontent.com/007gzs/ssh-auto/main/ssh.sh && chmod +x ssh.sh && ./ssh.sh
+apt update >/dev/null 2>&1 || yum update -y >/dev/null 2>&1 && apt install -y wget >/dev/null 2>&1 || yum install -y wget >/dev/null 2>&1 && wget -N https://raw.githubusercontent.com/ai7778/ssh/main/ssh.sh && chmod +x ssh.sh && ./ssh.sh
