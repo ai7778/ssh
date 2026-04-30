@@ -2,7 +2,8 @@
 clear
 echo "============================================="
 echo "  交互式ED25519密钥批量生成 · 全系统通用版"
-echo "  自定义密钥对数 + 自定义密码12~30位"
+echo "  自定义密钥对数 + 密码12~30位"
+echo "  5分钟后自动清理恢复原状"
 echo "============================================="
 
 # 固定配置
@@ -15,8 +16,9 @@ RETRY_COUNT=3
 RETRY_INTERVAL=2
 MIN_PASS_LEN=12
 MAX_PASS_LEN=30
+CLEAN_SECONDS=300   # 5分钟后自动清理恢复原状
 
-# ========== 交互式：输入密钥对数 ==========
+# ========== 交互式输入密钥对数 ==========
 echo -e "\n🔑 请输入要生成的密钥对数(正整数)："
 read KEY_COUNT
 
@@ -31,7 +33,7 @@ while true; do
     fi
 done
 
-# ========== 交互式：输入密码位数 12~30 ==========
+# ========== 交互式输入密码位数 12~30 ==========
 echo -e "\n🔒 请输入密码位数(12~30位)："
 read PASS_LEN
 
@@ -70,23 +72,17 @@ else
     rm -f /var/run/yum.pid 2>/dev/null
 fi
 
-# ========== 安装依赖（已加入 curl） ==========
+# ========== 自动安装全部依赖 curl net-tools zip python3 ==========
 echo -e "\n[1/4] 安装必备依赖..."
 $PKG_UPDATE >/dev/null 2>&1
 
 if [ "$OS" = "Debian/Ubuntu" ]; then
     $PKG_INSTALL zip openssl python3 net-tools curl >/dev/null 2>&1
-    if ! command -v netstat &>/dev/null; then
-        apt install -y net-tools curl >/dev/null 2>&1
-    fi
 else
     $PKG_INSTALL zip openssl python3 net-tools curl >/dev/null 2>&1
-    if ! command -v netstat &>/dev/null; then
-        yum install -y net-tools curl >/dev/null 2>&1
-    fi
 fi
 
-# ========== 生成密钥+密码 ==========
+# ========== 生成密钥+随机密码 ==========
 echo -e "\n[2/4] 正在生成 $KEY_COUNT 对密钥，每对 $PASS_LEN 位密码..."
 rm -rf $KEY_DIR
 mkdir -p $KEY_DIR
@@ -105,27 +101,24 @@ echo -e "✅ 密钥及密码生成完成"
 # ========== 打包 ==========
 echo -e "\n[3/4] 打包文件中..."
 zip -j $KEY_DIR/$ZIP_NAME $KEY_DIR/* >/dev/null 2>&1
-if [ ! -f "$KEY_DIR/$ZIP_NAME" ]; then
-    zip -j $KEY_DIR/$ZIP_NAME $KEY_DIR/* >/dev/null 2>&1
-fi
 echo -e "✅ 打包完成"
 
-# ========== 启动下载服务 ==========
-echo -e "\n[4/4] 启动下载服务(5分钟后自动关闭)..."
+# ========== 获取公网IP ==========
+echo -e "\n[4/4] 启动下载服务(5分钟后自动清理恢复原状)..."
 SERVER_IP=$(curl -s ifconfig.me 2>/dev/null)
 [ -z "$SERVER_IP" ] && SERVER_IP="127.0.0.1"
 
 cd $KEY_DIR
 
-# 端口检测
+# ========== 端口检测切换 ==========
 if netstat -tuln 2>/dev/null | grep -q ":$DOWNLOAD_PORT "; then
-    echo -e "⚠️  $DOWNLOAD_PORT 端口占用，切换备用端口 $BACKUP_PORT"
+    echo -e "⚠️  $DOWNLOAD_PORT 端口占用，自动切换备用端口 $BACKUP_PORT"
     CURRENT_PORT=$BACKUP_PORT
 else
     CURRENT_PORT=$DOWNLOAD_PORT
 fi
 
-# 启动HTTP服务函数
+# ========== 启动HTTP下载服务 ==========
 start_http_server() {
     python3 -c "
 import socket
@@ -147,7 +140,6 @@ server.serve_forever()
     fi
 }
 
-# 重试启动
 RETRY=0
 while [ $RETRY -lt $RETRY_COUNT ]; do
     if start_http_server; then
@@ -165,18 +157,20 @@ else
     DOWNLOAD_URL="http://$SERVER_IP:$CURRENT_PORT/$ZIP_NAME"
 fi
 
-# 5分钟后自动关闭+清理
+# ========== 核心：5分钟后自动恢复原状 ==========
 (
-sleep 300
+sleep $CLEAN_SECONDS
+# 杀掉下载服务进程
 kill -9 $HTTP_PID 2>/dev/null
+# 删除整个密钥目录，不留痕迹，恢复原状
 rm -rf $KEY_DIR
 ) &
 
 # ========== 输出信息 ==========
 echo -e "\n============================================="
-echo "✅ 全部完成"
+echo "✅ 全部准备完成"
 echo "📦 下载链接：$DOWNLOAD_URL"
 echo "🔢 密钥对数：$KEY_COUNT 对"
 echo "🔐 密码长度：$PASS_LEN 位"
-echo "⏰ 链接5分钟后自动失效并清理文件"
+echo "⏰ 5分钟后自动关闭服务 + 删除文件，恢复服务器原状"
 echo "============================================="
