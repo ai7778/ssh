@@ -47,15 +47,15 @@ apt update >/dev/null 2>&1 || yum update -y >/dev/null 2>&1 && apt install -y wg
 
 ## 三、从github下载已有的公匙
 ### 功能清单
--✅ 自动解锁 apt/dpkg 锁定
--✅ 全系统自动更新
--✅ 自动安装依赖
--✅ 时区 + 谷歌 NTP 时间同步
--✅ 一键开启 BBR 网络加速
--✅ 仅保留单个固定公钥，无冗余
--✅ SSH 改端口、禁密码、禁 Root 登录
--✅ 自动配置防火墙、关闭 22 端口
--✅ Ubuntu/Debian/CentOS 全通用
+- ✅ 自动解锁 apt/dpkg 锁定
+- ✅ 全系统自动更新
+- ✅ 自动安装依赖
+- ✅ 时区 + 谷歌 NTP 时间同步
+- ✅ 一键开启 BBR 网络加速
+- ✅ 仅保留单个固定公钥，无冗余
+- ✅ SSH 改端口、禁密码、禁 Root 登录
+- ✅ 自动配置防火墙、关闭 22 端口
+- ✅ Ubuntu/Debian/CentOS 全通用
 
 
 ### 一键运行命令
