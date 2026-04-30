@@ -70,19 +70,19 @@ else
     rm -f /var/run/yum.pid 2>/dev/null
 fi
 
-# ========== 安装依赖 ==========
+# ========== 安装依赖（已加入 curl） ==========
 echo -e "\n[1/4] 安装必备依赖..."
 $PKG_UPDATE >/dev/null 2>&1
 
 if [ "$OS" = "Debian/Ubuntu" ]; then
-    $PKG_INSTALL zip openssl python3 net-tools >/dev/null 2>&1
+    $PKG_INSTALL zip openssl python3 net-tools curl >/dev/null 2>&1
     if ! command -v netstat &>/dev/null; then
-        apt install -y net-tools >/dev/null 2>&1
+        apt install -y net-tools curl >/dev/null 2>&1
     fi
 else
-    $PKG_INSTALL zip openssl python3 >/dev/null 2>&1
+    $PKG_INSTALL zip openssl python3 net-tools curl >/dev/null 2>&1
     if ! command -v netstat &>/dev/null; then
-        yum install -y net-tools >/dev/null 2>&1
+        yum install -y net-tools curl >/dev/null 2>&1
     fi
 fi
 
@@ -90,7 +90,7 @@ fi
 echo -e "\n[2/4] 正在生成 $KEY_COUNT 对密钥，每对 $PASS_LEN 位密码..."
 rm -rf $KEY_DIR
 mkdir -p $KEY_DIR
-CHARSET="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#!^%&*"
+CHARSET="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#&*"
 
 echo "SSH密钥密码对照表 共$KEY_COUNT对 密码长度:$PASS_LEN位" > $KEY_DIR/$PASS_FILE
 echo "=============================================" >> $KEY_DIR/$PASS_FILE
@@ -112,7 +112,7 @@ echo -e "✅ 打包完成"
 
 # ========== 启动下载服务 ==========
 echo -e "\n[4/4] 启动下载服务(5分钟后自动关闭)..."
-SERVER_IP=$(curl -s ifconfig.me)
+SERVER_IP=$(curl -s ifconfig.me 2>/dev/null)
 [ -z "$SERVER_IP" ] && SERVER_IP="127.0.0.1"
 
 cd $KEY_DIR
