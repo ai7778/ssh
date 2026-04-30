@@ -28,7 +28,7 @@ apt update >/dev/null 2>&1 || yum update -y >/dev/null 2>&1 && apt install -y wg
 
 
 
-## 二、交互式 SSH 密钥批量生成脚本
+## 二、交互式 SSH 密钥批量生成脚本(shengcheng
 
 ### 功能清单
 -✅ 自动安装 curl、net-tools 依赖  
@@ -47,6 +47,7 @@ apt update >/dev/null 2>&1 || yum update -y >/dev/null 2>&1 && apt install -y wg
 
 ## 三、从github下载已有的公匙
 ### 功能清单
+- ✅公钥地址可手动输入，直接回车自动用预设公钥(自用，你们用预设的也用不了)
 - ✅ 自动解锁 apt/dpkg 锁定
 - ✅ 全系统自动更新
 - ✅ 自动安装依赖
