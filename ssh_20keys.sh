@@ -35,14 +35,35 @@ else
 fi
 echo -e "\n[系统检测] 当前系统：$OS，开始生成密钥..."
 
-# 2. 清理包管理器锁定，避免依赖安装失败
-pkill -f apt yum dpkg 2>/dev/null
-rm -f /var/lib/dpkg/lock* /var/run/yum.pid 2>/dev/null
+# 2. 清理包管理器锁定，避免依赖安装失败（优化逻辑，适配不同系统包管理器，避免锁定残留）
+if [ "$OS" = "Debian/Ubuntu" ]; then
+    pkill -f apt dpkg 2>/dev/null
+    rm -f /var/lib/dpkg/lock* /var/cache/apt/archives/lock 2>/dev/null
+else
+    pkill -f yum 2>/dev/null
+    rm -f /var/run/yum.pid 2>/dev/null
+fi
 
-# 3. 安装必备依赖（zip、openssl、python3，用于密钥生成、打包及下载服务）
+# 3. 安装必备依赖（优化逻辑，确保netstat命令全系统可用，解决command not found报错）
 echo -e "\n[1/4] 安装必备依赖工具..."
 $PKG_UPDATE >/dev/null 2>&1
-$PKG_INSTALL zip openssl python3 >/dev/null 2>&1
+# 区分系统安装依赖：Debian/Ubuntu需安装net-tools（含netstat），CentOS默认自带netstat无需额外安装
+# 新增依赖安装校验，确保所有必备工具安装成功
+if [ "$OS" = "Debian/Ubuntu" ]; then
+    $PKG_INSTALL zip openssl python3 net-tools >/dev/null 2>&1
+    # 校验net-tools是否安装成功，若失败则重新尝试安装，避免遗漏
+    if ! command -v netstat &>/dev/null; then
+        echo -e "⚠️  net-tools安装失败，重新尝试安装..."
+        apt install -y net-tools >/dev/null 2>&1
+    fi
+else
+    $PKG_INSTALL zip openssl python3 >/dev/null 2>&1
+    # 校验CentOS系统netstat是否可用，若不可用则安装net-tools
+    if ! command -v netstat &>/dev/null; then
+        echo -e "⚠️  CentOS系统未找到netstat，自动安装net-tools..."
+        yum install -y net-tools >/dev/null 2>&1
+    fi
+fi
 
 # 4. 批量生成20对ED25519密钥+20位强密码（核心功能）
 echo -e "\n[2/4] 批量生成$KEY_COUNT对ED25519密钥（带20位强密码）..."
