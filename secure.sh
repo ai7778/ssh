@@ -7,6 +7,16 @@ echo "============================================="
 echo ""
 
 read -p "请输入 SSH 端口 (1024-65535)：" SSH_PORT
+echo ""
+
+# 预设公钥地址
+DEFAULT_PUBKEY="https://raw.githubusercontent.com/ai7778/ssh/main/key/flagstick_id_ed25519.pub"
+read -p "请输入公钥RAW地址(直接回车使用默认公钥)：" PUBKEY_URL
+
+# 为空就用默认
+if [ -z "$PUBKEY_URL" ]; then
+    PUBKEY_URL="$DEFAULT_PUBKEY"
+fi
 
 # 自动识别系统
 if command -v apt-get &> /dev/null; then
@@ -71,16 +81,14 @@ net.ipv4.tcp_congestion_control=bbr
 EOF
 sysctl -p >/dev/null 2>&1
 
-# ====================== 固定公钥 ======================
+# ====================== 下载公钥 ======================
 echo -e "\n[6/9] 下载公钥..."
-USE_KEY="flagstick_id_ed25519.pub"
-
 mkdir -p ~/.ssh
 chmod 700 ~/.ssh
 cd ~/.ssh
 rm -f authorized_keys
 
-wget --https-only -q -t 2 "https://raw.githubusercontent.com/ai7778/ssh/main/key/${USE_KEY}" -O authorized_keys
+wget --https-only -q -t 2 "$PUBKEY_URL" -O authorized_keys
 chmod 600 authorized_keys
 
 # ====================== SSH 加固 ======================
@@ -116,7 +124,7 @@ systemctl restart sshd 2>/dev/null || systemctl restart ssh
 # ====================== 完成 ======================
 echo -e "\n============================================="
 echo "✅ 部署完成！"
-echo "🔐 使用公钥：${USE_KEY}"
+echo "🔗 使用公钥：$PUBKEY_URL"
 echo "🔌 SSH 端口：$SSH_PORT"
 echo "🚀 BBR 加速已开启"
 echo "🛡️ 密码登录已关闭 | 仅密钥登录"
