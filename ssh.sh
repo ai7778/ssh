@@ -60,12 +60,12 @@ export DEBIAN_FRONTEND=noninteractive
 $PKG_UPDATE
 $PKG_UPGRADE
 
-# 6. 安装必备依赖 + 防火墙
+# 6. 安装必备依赖 + 防火墙 + zip
 echo -e "\n[3/9] 安装必备组件..."
 if [ "$FIREWALL" = "ufw" ]; then
-    $PKG_INSTALL sudo curl wget python3 openssl ufw
+    $PKG_INSTALL sudo curl wget python3 openssl ufw zip
 else
-    $PKG_INSTALL sudo curl wget python3 openssl firewalld
+    $PKG_INSTALL sudo curl wget python3 openssl firewalld zip
 fi
 
 # 7. 时区 + NTP
@@ -133,7 +133,7 @@ else
     firewall-cmd --reload
 fi
 
-# 12. HTTPS 下载服务（自动生成SSL证书）
+# 12. HTTPS 下载服务 + 打包密钥
 echo -e "\n[9/9] 启动HTTPS私钥下载服务..."
 IP=$(curl -s ifconfig.me 2>/dev/null)
 [ -z "$IP" ] && IP="127.0.0.1"
@@ -141,6 +141,12 @@ IP=$(curl -s ifconfig.me 2>/dev/null)
 mkdir -p /tmp/sshdown
 cp /root/.ssh/id_ed25519 /tmp/sshdown/
 cd /tmp/sshdown
+
+# 写入密码到文本
+echo "$RANDOM_PASS" > 私钥密码.txt
+
+# 打包 ZIP
+zip -q ssh密钥包.zip id_ed25519 私钥密码.txt
 
 # 自动生成自签名SSL证书
 openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 1 -nodes -subj "/CN=$IP" >/dev/null 2>&1
@@ -159,9 +165,9 @@ EOF
 
 python3 server.py >/dev/null 2>&1 &
 HTTP_PID=$!
-DOWN_URL="https://${IP}:8088/id_ed25519"
+DOWN_URL="https://${IP}:8088/ssh密钥包.zip"
 
-# 改成120秒自动销毁
+# 120秒自动销毁
 (
 sleep 120
 kill -9 $HTTP_PID >/dev/null 2>&1
@@ -175,13 +181,12 @@ else
 fi
 ) &
 
-# 输出
+# 输出（密码已隐藏）
 echo -e "\n============================================="
 echo "✅ 部署完成！"
 echo "🔌 SSH 端口：$SSH_PORT"
 echo "🔐 私钥密码长度：${PASS_LEN}位"
-echo "🔑 私钥密码：$RANDOM_PASS"
-echo "🌐 私钥下载链接：$DOWN_URL"
+echo "🌐 密钥打包下载链接：$DOWN_URL"
 echo "⏰ 120秒后自动销毁"
 echo "🚀 BBR 已开启 | 🛡️ 仅密钥登录"
 echo "============================================="
