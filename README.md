@@ -3,11 +3,15 @@
 ## 一、SSH 安全加固脚本,改密匙登陆
 ### 功能清单
 - ✅ 服务器本地自动生成 SSH ED25519 密钥对
-- ✅ 私钥随机 20 位高强度密码（大小写字母 + 数字 + @#&*）
-- ✅ 浏览器私钥下载链接，60秒自动失效关闭端口
-- ✅ 自定义 SSH 登录端口
-- ✅ 防火墙关闭默认22端口，彻底禁用密码登录，仅密钥可连
-- ✅ 系统时间同步强制配置：`time1.google.com time2.google.com time3.google.com time4.google.com`
+- ✅ 自动安装 ufw（彻底解决 command not found）
+- ✅ 自动安装 firewalld（CentOS 无报错）
+- ✅ 所有防火墙命令加静默输出，不弹多余日志
+- ✅ 兼容 Ubuntu/Debian/CentOS 任何版本
+- ✅ 自定义 SSH 端口
+- ✅ 自定义密码长度 14~30 位
+- ✅ Google NTP
+- ✅ BBR 加速
+- ✅ 60 秒自动销毁下载链接
 - ✅ 全系统通用：Ubuntu / Debian / CentOS
 
 ### 一键运行命令
