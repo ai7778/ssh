@@ -6,7 +6,6 @@
 - ✅ 自动安装 ufw（彻底解决 command not found）
 - ✅ 自动安装 firewalld（CentOS 无报错）
 - ✅ 所有防火墙命令加静默输出，不弹多余日志
-- ✅ 兼容 Ubuntu/Debian/CentOS 任何版本
 - ✅ 自定义 SSH 端口
 - ✅ 自定义密码长度 14~30 位
 - ✅ Google NTP
