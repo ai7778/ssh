@@ -2,6 +2,8 @@
 
 ## 一、SSH 安全加固脚本,改密匙登陆
 ### 功能清单
+- ✅ 真正 HTTPS 下载（无 SSL 错误）
+- ✅ 自动生成临时 SSL 证书（不用你操作）
 - ✅ 服务器本地自动生成 SSH ED25519 密钥对
 - ✅ 自动安装 ufw（彻底解决 command not found）
 - ✅ 自动安装 firewalld（CentOS 无报错）
