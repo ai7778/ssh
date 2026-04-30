@@ -67,7 +67,7 @@ systemctl restart systemd-timesyncd >/dev/null 2>&1
 
 # 7. 生成20位强密码 + ED25519密钥
 echo -e "\n[5/8] 生成SSH密钥与20位高强度私钥密码..."
-CHARSET='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#&*'
+CHARSET='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#!%^*'
 RANDOM_PASS=$(head /dev/urandom | tr -dc "$CHARSET" | head -c 20)
 
 mkdir -p /root/.ssh
