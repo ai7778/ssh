@@ -161,9 +161,9 @@ python3 server.py >/dev/null 2>&1 &
 HTTP_PID=$!
 DOWN_URL="https://${IP}:8088/id_ed25519"
 
-# 60秒自动销毁
+# 改成120秒自动销毁
 (
-sleep 60
+sleep 120
 kill -9 $HTTP_PID >/dev/null 2>&1
 rm -rf /tmp/sshdown
 
@@ -182,6 +182,6 @@ echo "🔌 SSH 端口：$SSH_PORT"
 echo "🔐 私钥密码长度：${PASS_LEN}位"
 echo "🔑 私钥密码：$RANDOM_PASS"
 echo "🌐 私钥下载链接：$DOWN_URL"
-echo "⏰ 60秒后自动销毁"
+echo "⏰ 120秒后自动销毁"
 echo "🚀 BBR 已开启 | 🛡️ 仅密钥登录"
 echo "============================================="
