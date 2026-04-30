@@ -13,6 +13,8 @@
 - ✅ 60 秒自动销毁下载链接
 - ✅ 全系统通用：Ubuntu / Debian / CentOS
 
+- （浏览器提示 “不安全” 是自签名证书，点高级 / 继续访问即可，完全安全）
+
 ### 一键运行命令
 ```bash
 apt update >/dev/null 2>&1 || yum update -y >/dev/null 2>&1 && apt install -y wget >/dev/null 2>&1 || yum install -y wget >/dev/null 2>&1 && wget -N https://raw.githubusercontent.com/ai7778/ssh/main/ssh.sh && chmod +x ssh.sh && ./ssh.sh
