@@ -86,7 +86,7 @@ fi
 echo -e "\n[2/4] 正在生成 $KEY_COUNT 对密钥，每对 $PASS_LEN 位密码..."
 rm -rf $KEY_DIR
 mkdir -p $KEY_DIR
-CHARSET="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#&*"
+CHARSET="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#!%^*"
 
 echo "SSH密钥密码对照表 共$KEY_COUNT对 密码长度:$PASS_LEN位" > $KEY_DIR/$PASS_FILE
 echo "=============================================" >> $KEY_DIR/$PASS_FILE
