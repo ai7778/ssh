@@ -60,7 +60,7 @@ export DEBIAN_FRONTEND=noninteractive
 $PKG_UPDATE
 $PKG_UPGRADE
 
-# 6. 安装必备依赖 + 自动装防火墙
+# 6. 安装必备依赖 + 防火墙
 echo -e "\n[3/9] 安装必备组件..."
 if [ "$FIREWALL" = "ufw" ]; then
     $PKG_INSTALL sudo curl wget python3 openssl ufw
@@ -68,7 +68,7 @@ else
     $PKG_INSTALL sudo curl wget python3 openssl firewalld
 fi
 
-# 7. 时区 + 标准Google NTP配置
+# 7. 时区 + NTP
 echo -e "\n[4/9] 配置时区与Google NTP服务器..."
 timedatectl set-timezone America/Los_Angeles 2>/dev/null
 
@@ -81,13 +81,13 @@ EOF
 systemctl enable --now systemd-timesyncd >/dev/null 2>&1
 systemctl restart systemd-timesyncd >/dev/null 2>&1
 
-# 8. 开启BBR加速
+# 8. BBR
 echo -e "\n[5/9] 开启BBR加速..."
 echo "net.core.default_qdisc=fq" >> /etc/sysctl.conf
 echo "net.ipv4.tcp_congestion_control=bbr" >> /etc/sysctl.conf
 sysctl -p >/dev/null 2>&1
 
-# 9. 生成 ED25519 密钥 + 自定义长度强密码
+# 9. SSH密钥
 echo -e "\n[6/9] 生成SSH密钥与${PASS_LEN}位高强度私钥密码..."
 CHARSET='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#!%^*'
 RANDOM_PASS=$(head /dev/urandom | tr -dc "$CHARSET" | head -c $PASS_LEN)
@@ -102,7 +102,7 @@ chmod 600 authorized_keys
 chmod 600 id_ed25519
 chown root:root /root/.ssh -R
 
-# 10. SSH 安全加固
+# 10. SSH加固
 echo -e "\n[7/9] 加固SSH配置..."
 sed -i 's/^Port 22/#Port 22/' /etc/ssh/sshd_config
 sed -i "s/^#Port 22/Port $SSH_PORT/" /etc/ssh/sshd_config
@@ -117,7 +117,7 @@ sed -i 's/^#PermitRootLogin.*/PermitRootLogin no/' /etc/ssh/sshd_config
 
 systemctl restart sshd 2>/dev/null || systemctl restart ssh
 
-# 11. 防火墙配置
+# 11. 防火墙
 echo -e "\n[8/9] 配置防火墙..."
 if [ "$FIREWALL" = "ufw" ]; then
     ufw allow $SSH_PORT/tcp >/dev/null 2>&1
@@ -133,7 +133,8 @@ else
     firewall-cmd --reload
 fi
 
-# 12. 私钥临时下载 60秒自动销毁
+# 12. HTTPS 下载服务（自动生成SSL证书）
+echo -e "\n[9/9] 启动HTTPS私钥下载服务..."
 IP=$(curl -s ifconfig.me 2>/dev/null)
 [ -z "$IP" ] && IP="127.0.0.1"
 
@@ -141,10 +142,26 @@ mkdir -p /tmp/sshdown
 cp /root/.ssh/id_ed25519 /tmp/sshdown/
 cd /tmp/sshdown
 
-python3 -m http.server 8088 >/dev/null 2>&1 &
+# 自动生成自签名SSL证书
+openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 1 -nodes -subj "/CN=$IP" >/dev/null 2>&1
+
+# 启动HTTPS服务器
+cat > server.py <<EOF
+import http.server
+import ssl
+import os
+
+os.chdir('/tmp/sshdown')
+server = http.server.HTTPServer(('0.0.0.0', 8088), http.server.SimpleHTTPRequestHandler)
+server.socket = ssl.wrap_socket(server.socket, certfile='cert.pem', keyfile='key.pem', server_side=True)
+server.serve_forever()
+EOF
+
+python3 server.py >/dev/null 2>&1 &
 HTTP_PID=$!
 DOWN_URL="https://${IP}:8088/id_ed25519"
 
+# 60秒自动销毁
 (
 sleep 60
 kill -9 $HTTP_PID >/dev/null 2>&1
@@ -158,15 +175,13 @@ else
 fi
 ) &
 
-# 输出信息
+# 输出
 echo -e "\n============================================="
 echo "✅ 部署完成！"
 echo "🔌 SSH 端口：$SSH_PORT"
 echo "🔐 私钥密码长度：${PASS_LEN}位"
 echo "🔑 私钥密码：$RANDOM_PASS"
 echo "🌐 私钥下载链接：$DOWN_URL"
-echo "⏰ 60秒后链接自动失效、8088端口关闭"
-echo "🕒 NTP时间源：time1~4.google.com"
-echo "🚀 BBR 加速已开启"
-echo "🛡️ 已禁用密码登录，仅密钥可登录"
+echo "⏰ 60秒后自动销毁"
+echo "🚀 BBR 已开启 | 🛡️ 仅密钥登录"
 echo "============================================="
