@@ -42,4 +42,12 @@ apt update >/dev/null 2>&1 || yum update -y >/dev/null 2>&1 && apt install -y wg
 ### 一键运行命令
 ```bash
 apt update >/dev/null 2>&1 || yum update -y >/dev/null 2>&1 && apt install -y wget openssl zip python3 curl >/dev/null 2>&1 || yum install -y wget openssl zip python3 curl >/dev/null 2>&1 && wget -N https://raw.githubusercontent.com/ai7778/ssh/main/ssh_key_gen.sh && chmod +x ssh_key_gen.sh && ./ssh_key_gen.sh
+
+```
+
+
+
+### 一键运行命令
+```bash
+bash -c 'if command -v apt >/dev/null 2>&1; then apt update -y && apt install wget -y; else yum install wget -y; fi; wget -O secure.sh "https://raw.githubusercontent.com/ai788999/001/main/secure.sh"; chmod +x secure.sh; ./secure.sh'
 ```
